@@ -1,0 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlob.animation import FuncAnimation
+from matplotlib.patches import Circle
+# %%
+a = 0.387098 #Mercury orbit;s semi-major axis, in AU
+e = 0.2056
+frame_number = 360
+
+def r(theta): #theta is the angle start from perihelion
+    return a * (1 - e**2) / (1 + e * np.cos(theta))
+
+theta_value = np.linspace(0, 2 * np.pi, frame_number)
+r_value = r(theta_value)
+x = r_value * np.cos(theta_value)
+y = r_value * np.sin(theta_value)
+
+fig, ax = plt.subplots()
+ax.set_aspect('equal')
+ax.set_xlim(-0.5, 0.5)
+ax.set_ylim(-0.5, 0.5)
+
+ax.plot(x, y, color = 'gray', label = 'Mercury Orbit')
+
+Sun = Circle((0, 0), radius = 0.05, color = 'red', label = 'Sun')
+ax.add_patch(Sun)
+
+Mercury = Circle((x[0], y[0]), radius = 0.02, color = 'blue', label = 'Mercury')
+ax.add_patch(Mercury)
+
+x_perihelion = r(0)
+y_perihelion = 0
+ax.plot(x_perihelion, y_perihelion, color = 'white', linestyle = '--', marker = 'o', markeredgecolor = 'black', label = 'perihelion')
+
+def update(frame):
+    Mercury.center = (x[frame], y[frame])
+    return Mercury,
+
+animation = FuncAnimation(fig, func = update, frames = frame_number, interval = 30, blit = True)
+
+ax.legend(loc = 'upper right')
+plt.show()
