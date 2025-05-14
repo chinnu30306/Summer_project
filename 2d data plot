@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 14 03:14:22 2025
+
+"""
+
+import requests
+import matplotlib.pyplot as plt
+import numpy as np
+url = "https://omniweb.gsfc.nasa.gov/staging/modelweb/helios_h_MPfcwRYZ7x.lst"
+response = requests.get(url)
+data_lines = response.text.strip().split('\n')
+RAD_AU = []
+HGI_LON = []
+
+for line in data_lines:
+    parts = line.split()
+    if len(parts) >= 6:
+        rad = float(parts[3])
+        lon = float(parts[5])
+        RAD_AU.append(rad)
+        HGI_LON.append(lon)
+
+lon_rad = np.radians(HGI_LON)
+x = np.array(RAD_AU) * np.cos(lon_rad)
+y = np.array(RAD_AU) * np.sin(lon_rad)
+
+plt.figure(figsize=(6, 6))
+plt.plot(x, y, label="Mercury's Orbit", linewidth=1)
+plt.scatter(0, 0, color='orange', label='Sun', s=100)
+plt.xlabel('X (AU)')
+plt.ylabel('Y (AU)')
+plt.title("Mercury's orbit from data")
+plt.axis('equal')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
