@@ -3,9 +3,20 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 
+def angle_between_vectors(u, v):
+    dot_product = np.dot(u, v)
+    norm_u = np.linalg.norm(u)
+    norm_v = np.linalg.norm(v)
+    cos_theta = dot_product / (norm_u * norm_v)
+    return np.degrees(np.arccos(cos_theta))
+
+def straight_line(x, m, c):
+    func = m*x + c
+    return func
+
 #%%
 #read data
-data = np.genfromtxt("/Users/chinmayib/Documents/University/Summer project/ephemeris_data.txt", dtype=str, delimiter="\n")
+data = np.genfromtxt("/Users/chinmayib/Documents/University/Projects/Summer project/ephemeris_data.txt", dtype=str, delimiter="\n")
 
 #initialise arrays
 x = np.array([])
@@ -43,23 +54,22 @@ while i <= len(data):
 day = np.linspace(0, len(rr), num=len(rr))
 peaks, properties = find_peaks(-(rr)) #find minima to get index of perihelion values
 
-def angle_between_vectors(u, v):
-    dot_product = np.dot(u, v)
-    norm_u = np.linalg.norm(u)
-    norm_v = np.linalg.norm(v)
-    cos_theta = dot_product / (norm_u * norm_v)
-    return np.degrees(np.arccos(cos_theta))
-
-u = np.array([x[peaks[1]], y[peaks[1]], z[peaks[1]]])
+a = np.array([x[peaks[1]], y[peaks[1]], z[peaks[1]]])
 theta = np.array([])
 
 for j in range(0, len(peaks)):
-    v = np.array([x[peaks[j]], y[peaks[j]], z[peaks[j]]])
-    theta = np.append(theta, angle_between_vectors(u, v))
+    b = np.array([x[peaks[j]], y[peaks[j]], z[peaks[j]]])
+    theta = np.append(theta, angle_between_vectors(a, b))
 
 #%%
+initial_guess = [1, 1]
+popt, pcov = curve_fit(straight_line, peaks, theta, p0=initial_guess)
+precession = popt[0] * 1.3149e8
+precession_unc = np.sqrt(pcov[0][0]) * 1.3149e8
+print("Precession rate: ", precession, " +/- ", precession_unc, " arcsec/century")
+
 plt.plot(peaks, theta, '.')
-plt.plot(day, 4.373e-6*day)
+plt.plot(peaks, straight_line(peaks, popt[0], popt[1]))
 plt.show()
 
 
